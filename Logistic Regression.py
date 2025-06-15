@@ -63,17 +63,15 @@ data = data.drop(['Patient_ID', 'Disease_Duration', 'Hospitalizations',
 
 
 ### Data Splitting ###
-X = data.drop("Diagnosis", axis=1)      # axis=1 muss sein weil bei data["Diagnosis"] gibts value error
+X = data.drop("Diagnosis", axis=1)
 y = data["Diagnosis"]
 
 X_train_raw, X_test_raw, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
-#X_train_raw, X_val_raw, y_train, y_val = train_test_split(X_train_raw, y_train, test_size=0.25, random_state=42, stratify=y_train)
 
 
 ### one-hot encoding ###
 nominal_columns = ['Marital_Status', 'Occupation'] # all the others are ordinal or binary
 X_train_encoded = pd.get_dummies(X_train_raw, columns=nominal_columns, drop_first=False, dtype=int)
-#X_val_encoded  = pd.get_dummies(X_val_raw, columns=nominal_columns, drop_first=False, dtype=int)
 X_test_encoded = pd.get_dummies(X_test_raw, columns=nominal_columns, drop_first=False, dtype=int)
 
 nominal_columns_after_ohe = ['Marital_Status_0', 'Marital_Status_1', 'Marital_Status_2', 'Marital_Status_3',
@@ -85,13 +83,11 @@ num_columns = ['Age', 'Gender', 'Education_Level', 'Income_Level', 'Living_Area'
 ### Scaling ###
 scaler = StandardScaler()
 X_train_scaled = pd.DataFrame(scaler.fit_transform(X_train_encoded[num_columns]), columns=num_columns)
-#X_val_scaled = pd.DataFrame(scaler.transform(X_val_encoded[num_columns]), columns=num_columns)
 X_test_scaled = pd.DataFrame(scaler.transform(X_test_encoded[num_columns]), columns=num_columns)
 
 
 ### put together ###
 X_train = pd.concat([X_train_scaled.reset_index(drop=True), X_train_encoded[nominal_columns_after_ohe].reset_index(drop=True)], axis=1)
-#X_val = pd.concat([X_val_scaled.reset_index(drop=True), X_val_encoded[nominal_columns_after_ohe].reset_index(drop=True)], axis=1)
 X_test = pd.concat([X_test_scaled.reset_index(drop=True), X_test_encoded[nominal_columns_after_ohe].reset_index(drop=True)], axis=1)
 
 
@@ -104,11 +100,10 @@ print("Baseline test accuracy:", model.score(X_test, y_test))
 
 ### Hyperparameter tuning ###
 param_grid = {
-    'penalty': ['l1', 'l2'],
-    'C': [1, 10, 100, 1000],
-    'solver': ['liblinear', 'saga'],
+    'penalty': ['l2'],
+    'C': [0.1, 1, 10, 100],
+    'solver': ['lbfgs', 'liblinear'],
     'random_state': [42],
-    'max_iter': [100]
 }
 
 grid_search = GridSearchCV(
